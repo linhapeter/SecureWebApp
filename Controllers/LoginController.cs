@@ -1,18 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SecureWebApp.Data;
 using SecureWebApp.Models;
+using System.Diagnostics;
 
 namespace SecureWebApp.Controllers
 {
     public class LoginController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LoginController(AppDbContext context, IHttpContextAccessor httpContextAccessor)
+        public LoginController(AppDbContext context)
         {
             _context = context;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet]
@@ -26,16 +25,17 @@ namespace SecureWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                // WARNING: In production, always hash passwords and verify hashes!
+                
                 var user = _context.Users.FirstOrDefault(u =>
                     u.UserName == model.Username &&
                     u.Password == model.Password);
 
                 if (user != null)
                 {
-                    // Store user info in session
-                    _httpContextAccessor.HttpContext.Session.SetString("Username", user.UserName);
-                    _httpContextAccessor.HttpContext.Session.SetString("Role", user.Role);
+                    
+                    Response.Cookies.Append("IsAuthenticated", "true");
+                    Response.Cookies.Append("UserName", user.UserName);
+                    Response.Cookies.Append("UserRole", user.Role);
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -48,8 +48,13 @@ namespace SecureWebApp.Controllers
 
         public IActionResult Logout()
         {
-            _httpContextAccessor.HttpContext.Session.Clear();
-            return RedirectToAction("Index", "Home");
+            
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                Response.Cookies.Delete(cookie);
+            }
+
+            return RedirectToAction("Login");
         }
     }
 }
