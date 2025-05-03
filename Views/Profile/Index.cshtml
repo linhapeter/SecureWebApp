@@ -1,0 +1,15 @@
+﻿<h2>Profile Page - Welcome @ViewBag.Username!</h2>
+
+
+@if (ViewBag.Message != null)
+{
+    <div style="color:red">@ViewBag.Message</div>
+}
+
+<form method="post" action="/Profile/ChangePassword">
+    <div>
+        <label>New Password:</label>
+        <input type="password" name="newPassword" required />
+    </div>
+    <button type="submit">Change Password (Unsafe!)</button>
+</form>
