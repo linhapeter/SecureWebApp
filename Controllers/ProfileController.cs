@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SecureWebApp.Data;
 using SecureWebApp.Models;
 
@@ -11,30 +12,23 @@ public class ProfileController : Controller
         _context = context;
     }
 
-    // No authentication check - anyone can access
+    
     public IActionResult Index()
     {
         return View();
     }
 
-    // Password change with ZERO security
+    
     [HttpPost]
-    public IActionResult ChangePassword(string newPassword)
+    public IActionResult ChangePassword(string username, string newPassword)
     {
         
-        var username = Request.Cookies["Username"];
+        var sql = $"UPDATE Users SET Password = '{newPassword}' WHERE UserName = '{username}'";
 
         
-        var user = _context.Users.FirstOrDefault(u => u.UserName == username);
-        if (user != null)
-        {
-            user.Password = newPassword; 
-            _context.SaveChanges();
+        _context.Database.ExecuteSqlRaw(sql);
 
-            
-            ViewBag.Message = "Password changed";
-        }
-
+        ViewBag.Message = "Password changed (unsafely!)";
         return View("Index");
     }
 }

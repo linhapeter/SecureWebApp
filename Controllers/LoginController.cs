@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SecureWebApp.Data;
 using SecureWebApp.Models;
 using System.Diagnostics;
@@ -25,10 +26,10 @@ namespace SecureWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                
-                var user = _context.Users.FirstOrDefault(u =>
-                    u.UserName == model.Username &&
-                    u.Password == model.Password);
+
+                var user = _context.Users
+                     .FromSqlRaw($"SELECT * FROM Users WHERE UserName = '{model.Username}' AND Password = '{model.Password}'")
+                     .FirstOrDefault();
 
                 if (user != null)
                 {
